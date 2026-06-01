@@ -8,12 +8,13 @@ import Canvas from '@/components/Canvas';
 import MachineModal from '@/components/MachineModal';
 import DeleteConfirmModal from '@/components/DeleteConfirmModal';
 import { getPlantVersions } from '../services/plantVersionService';
-import { createSector, getSectors, deleteSector } from '../services/sectorService';
-import { createMachine, getMachines, deleteMachine } from '../services/machineService';
+import { createSector, getSectorsByPlant, deleteSector } from '../services/sectorService';
+import { getMachinesByPlant, createMachineApi, deleteMachine } from '../services/machineApiService';
 import { getPlantById } from '../services/plantService';
 import { Sector as ApiSector } from '../interfaces/Sector';
 import { Machine as ApiMachine } from '../interfaces/Machine';
-import { Sector, Machine, HistoryEntry } from '@/types/editor';
+import { Sector, Machine, HistoryEntry, Point } from '@/types/editor';
+import { useToast } from "@/hooks/use-toast";
 
 // Helper to convert API data to editor data format
 const convertToEditorSector = (apiSectors: ApiSector[]): Sector[] => {
@@ -46,7 +47,7 @@ const convertToEditorMachine = (apiMachines: ApiMachine[]): Machine[] => {
 
 
 const BlueprintPage = () => {
-  const { plantId } = useParams<{ plantId: string }>();
+  const { plantId, versionId } = useParams<{ plantId: string; versionId: string }>();
   const [plantName, setPlantName] = useState<string>('');
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
   const [tool, setTool] = useState<Tool>('select');
@@ -59,6 +60,8 @@ const BlueprintPage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newMachine, setNewMachine] = useState<Omit<Machine, 'name' | 'status'> | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; type: 'sector' | 'machine' } | null>(null);
+
+  const { toast } = useToast();
 
 
   useEffect(() => {
@@ -81,23 +84,29 @@ const BlueprintPage = () => {
         }
 
         let fetchedSectors: Sector[] = [];
-        if (activeVersion) {
-          const sectorsData = await getSectors(activeVersion.id);
+        if (plantId) {
+          const sectorsData = await getSectorsByPlant(plantId);
           fetchedSectors = convertToEditorSector(sectorsData);
           setSectors(fetchedSectors);
         }
 
-        const machinesData = await getMachines(plantId);
-        const fetchedMachines = convertToEditorMachine(machinesData);
-        setMachines(fetchedMachines);
+        if (plantId) {
+          const machinesData = await getMachinesByPlant(plantId);
+          setMachines(machinesData);
+        }
 
         // Initialize history
-        const initialEntry = { sectors: fetchedSectors, machines: fetchedMachines };
+        const initialEntry = { sectors: fetchedSectors, machines: machines };
         setHistory([initialEntry]);
         setHistoryIndex(0);
 
       } catch (err) {
         console.error("Failed to fetch blueprint data", err);
+        toast({
+          title: "Error fetching data",
+          description: "Could not load blueprint data. Please try again later.",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
@@ -110,20 +119,29 @@ const BlueprintPage = () => {
     // Detect if a new sector was added (the one without a real ID)
     const newSector = newSectors.find(s => !sectors.some(os => os.id === s.id));
 
-    if (newSector && activeVersionId) {
+    if (newSector && plantId) {
       try {
         const createdSector = await createSector({
-          plantVersionId: activeVersionId,
+          plantId: plantId,
           name: newSector.name,
           type: newSector.type,
           color: newSector.color,
-          points: newSector.points,
+          points: newSector.points as Point[],
         });
         // Replace the temporary sector with the one from the backend
         const updatedSectors = newSectors.map(s => s.id === newSector.id ? convertToEditorSector([createdSector])[0] : s);
         setSectors(updatedSectors);
+        toast({
+          title: "Sector Saved",
+          description: `Sector "${createdSector.name}" has been successfully saved.`,
+        });
       } catch (error) {
         console.error("Failed to save new sector:", error);
+        toast({
+          title: "Error Saving Sector",
+          description: "An unexpected error occurred while saving the sector.",
+          variant: "destructive",
+        });
         // Optionally revert the change
         setSectors(sectors);
       }
@@ -135,16 +153,19 @@ const BlueprintPage = () => {
 
   const handleMachinesChange = (newMachines: Machine[]) => {
     const addedMachine = newMachines.find(m => !machines.some(om => om.id === m.id));
-
+  
     if (addedMachine) {
       setNewMachine(addedMachine);
       setIsModalOpen(true);
+      // Temporarily add the machine to the UI for better UX
+      setMachines(newMachines);
     } else {
+      // This case might be for deletion or updates, ensure state is correctly updated
       setMachines(newMachines);
     }
   };
 
-  const handleSaveMachine = async (name: string, model: string, status: string) => {
+  const handleSaveMachine = async (name: string, model: string, status: 'active' | 'warning' | 'error') => {
     if (!newMachine || !plantId) return;
 
     // Find which sector the machine is in
@@ -155,6 +176,11 @@ const BlueprintPage = () => {
 
     if (!sector) {
         console.error("Machine must be placed inside a sector.");
+        toast({
+            title: "Invalid Machine Placement",
+            description: "A machine must be placed inside a valid sector.",
+            variant: "destructive",
+        });
         // Revert the temporary machine add
         setMachines(machines);
         setIsModalOpen(false);
@@ -162,7 +188,7 @@ const BlueprintPage = () => {
     }
 
     try {
-      const createdMachine = await createMachine({
+      const createdMachine = await createMachineApi({
         plantId: plantId,
         sectorId: sector.id,
         name: name,
@@ -172,15 +198,23 @@ const BlueprintPage = () => {
         status: status,
       });
 
-      const finalMachine = convertToEditorMachine([createdMachine])[0];
-      setMachines(prev => [...prev.filter(m => m.id !== newMachine.id), finalMachine]);
+      setMachines(prev => [...prev.filter(m => m.id !== newMachine.id), createdMachine]);
       setIsModalOpen(false);
       setNewMachine(null);
+      toast({
+        title: "Machine Saved",
+        description: `Machine "${createdMachine.name}" has been successfully saved.`,
+      });
 
     } catch (error) {
       console.error("Failed to save machine:", error);
+      toast({
+        title: "Error Saving Machine",
+        description: "An unexpected error occurred while saving the machine.",
+        variant: "destructive",
+      });
       // Revert the temporary machine add
-      setMachines(machines);
+      setMachines(machines.filter(m => m.id !== newMachine.id));
       setIsModalOpen(false);
     }
   };
@@ -192,19 +226,47 @@ const BlueprintPage = () => {
 
   const handleConfirmDelete = async () => {
     if (!deleteTarget) return;
-
+  
     try {
       if (deleteTarget.type === 'sector') {
+        // First, delete all machines within the sector
+        const machinesInSector = machines.filter(m => {
+          const sector = sectors.find(s => s.id === deleteTarget.id);
+          if (!sector) return false;
+          // Simple bounding box check, assuming rectangular sectors for this logic
+          const xs = sector.points.map(p => p.x);
+          const ys = sector.points.map(p => p.y);
+          const minX = Math.min(...xs);
+          const maxX = Math.max(...xs);
+          const minY = Math.min(...ys);
+          const maxY = Math.max(...ys);
+          return m.position.x >= minX && m.position.x <= maxX && m.position.y >= minY && m.position.y <= maxY;
+        });
+  
+        await Promise.all(machinesInSector.map(m => deleteMachine(m.id)));
+  
+        // Then, delete the sector itself
         await deleteSector(deleteTarget.id);
+  
+        // Update state
         setSectors(prev => prev.filter(s => s.id !== deleteTarget.id));
-        // Also remove machines that were in the deleted sector
-        setMachines(prev => prev.filter(m => m.sectorId !== deleteTarget.id));
+        setMachines(prev => prev.filter(m => !machinesInSector.some(ms => ms.id === m.id)));
+  
       } else {
         await deleteMachine(deleteTarget.id);
         setMachines(prev => prev.filter(m => m.id !== deleteTarget.id));
       }
+      toast({
+        title: `${deleteTarget.type.charAt(0).toUpperCase() + deleteTarget.type.slice(1)} Deleted`,
+        description: `The ${deleteTarget.type} "${deleteTarget.name}" has been deleted.`,
+      });
     } catch (error) {
       console.error(`Failed to delete ${deleteTarget.type}:`, error);
+      toast({
+        title: `Error Deleting ${deleteTarget.type.charAt(0).toUpperCase() + deleteTarget.type.slice(1)}`,
+        description: `Could not delete the ${deleteTarget.type}. Please try again.`,
+        variant: "destructive",
+      });
     } finally {
       setDeleteTarget(null);
     }
@@ -286,7 +348,10 @@ const BlueprintPage = () => {
         isOpen={isModalOpen}
         onClose={() => {
           setIsModalOpen(false);
-          setMachines(machines); // Revert if modal is closed without saving
+          // Revert the temporary add if the modal is closed without saving
+          if (newMachine) {
+            setMachines(machines.filter(m => m.id !== newMachine.id));
+          }
         }}
         onSave={handleSaveMachine}
       />

@@ -5,7 +5,7 @@ const API_BASE_URL = 'http://localhost:5071';
 export const getPlantVersions = async (plantId: string): Promise<PlantVersion[]> => {
   const token = localStorage.getItem('token');
 
-  const response = await fetch(`${API_BASE_URL}/api/PlantVersion/${plantId}`, {
+  const response = await fetch(`${API_BASE_URL}/api/plants/${plantId}`, {
     headers: {
       'Authorization': `Bearer ${token}`,
     },

@@ -1,11 +1,11 @@
 import { Sector } from '../interfaces/Sector';
 
-const API_BASE_URL = 'http://localhost:5071';
+const API_BASE_URL = 'http://localhost:5071/api';
 
-export const getSectors = async (plantVersionId: string): Promise<Sector[]> => {
+export const getSectorsByPlant = async (plantId: string): Promise<Sector[]> => {
   const token = localStorage.getItem('token');
-
-  const response = await fetch(`${API_BASE_URL}/api/sectors/plantVersion/${plantVersionId}`, {
+  const response = await fetch(`${API_BASE_URL}/sectors/plant/${plantId}`, {
+    method: 'GET',
     headers: {
       'Authorization': `Bearer ${token}`,
     },
@@ -15,11 +15,15 @@ export const getSectors = async (plantVersionId: string): Promise<Sector[]> => {
     throw new Error('Failed to fetch sectors');
   }
 
-  return response.json();
+  const sectors = await response.json();
+  return sectors.map((sector: any) => ({
+    ...sector,
+    points: JSON.parse(sector.pointsJson),
+  }));
 };
 
 export interface CreateSectorDto {
-  plantVersionId: string;
+  plantId: string;
   name: string;
   type: string;
   color: string;
@@ -36,7 +40,7 @@ export const createSector = async (sectorData: CreateSectorDto): Promise<Sector>
     areaM2: 0, // Assuming default area, adjust if needed
   };
 
-  const response = await fetch(`${API_BASE_URL}/api/sectors`, {
+  const response = await fetch(`${API_BASE_URL}/sectors`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -59,7 +63,7 @@ export const createSector = async (sectorData: CreateSectorDto): Promise<Sector>
 export const deleteSector = async (sectorId: string): Promise<void> => {
   const token = localStorage.getItem('token');
 
-  const response = await fetch(`${API_BASE_URL}/api/sectors/${sectorId}`, {
+  const response = await fetch(`${API_BASE_URL}/sectors/${sectorId}`, {
     method: 'DELETE',
     headers: {
       'Authorization': `Bearer ${token}`,
@@ -70,24 +74,4 @@ export const deleteSector = async (sectorId: string): Promise<void> => {
     const errorText = await response.text();
     throw new Error(`Failed to delete sector: ${errorText}`);
   }
-};
-
-export const getSectorsByPlantVersion = async (plantVersionId: string): Promise<Sector[]> => {
-  const token = localStorage.getItem('token');
-  const response = await fetch(`${API_BASE_URL}/sectors/plantVersion/${plantVersionId}`, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch sectors');
-  }
-
-  const sectors = await response.json();
-  return sectors.map((sector: any) => ({
-    ...sector,
-    points: JSON.parse(sector.pointsJson),
-  }));
 };

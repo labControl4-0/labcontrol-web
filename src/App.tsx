@@ -4,6 +4,7 @@ import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import Login from "./pages/Login.tsx";
+import Register from "./pages/Register.tsx";
 import NotFound from "./pages/NotFound.tsx";
 import PlantsPage from "./pages/PlantsPage.tsx";
 import BlueprintPage from "./pages/BlueprintPage.tsx";
@@ -17,10 +18,10 @@ const App = () => (
         <Toaster richColors position="bottom-right" theme="dark" />
         <BrowserRouter>
           <Routes>
-            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/plants" element={<PlantsPage />} />
             <Route path="/plants/:plantId/blueprint" element={<BlueprintPage />} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
