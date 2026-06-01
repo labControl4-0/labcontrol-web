@@ -2,6 +2,8 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import { Point, Sector, Machine, Tool, SectorType } from '@/types/editor';
 import SectorModal from './SectorModal';
 import { Cpu, Pencil, Palette, Trash2 } from 'lucide-react';
+import { createMachineApi } from '@/services/machineApiService';
+import { useParams } from 'react-router-dom';
 
 interface CanvasProps {
   tool: Tool;
@@ -11,6 +13,7 @@ interface CanvasProps {
   onSectorsChange: (sectors: Sector[]) => void;
   onMachinesChange: (machines: Machine[]) => void;
   onPushHistory: () => void;
+  onElementRightClick: (element: Sector | Machine) => void;
 }
 
 const GRID_SIZE = 20;
@@ -25,7 +28,10 @@ const Canvas = ({
   onSectorsChange,
   onMachinesChange,
   onPushHistory,
+  onElementRightClick,
 }: CanvasProps) => {
+  const { plantId, versionId } = useParams<{ plantId: string; versionId: string }>();
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const svgRef = useRef<SVGSVGElement>(null);
   const [pan, setPan] = useState<Point>({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
@@ -37,6 +43,28 @@ const Canvas = ({
   const [hoveredSector, setHoveredSector] = useState<string | null>(null);
   const [selectedSector, setSelectedSector] = useState<string | null>(null);
   const [uiFaded, setUiFaded] = useState(false);
+
+  const isPointInMachine = (point: Point, machine: Machine): boolean => {
+    const machineSize = 20; // Assuming a fixed size for machines for now
+    return (
+      point.x >= machine.position.x &&
+      point.x <= machine.position.x + machineSize &&
+      point.y >= machine.position.y &&
+      point.y <= machine.position.y + machineSize
+    );
+  };
+
+  const isPointInPolygon = (point: Point, polygon: Point[]): boolean => {
+    let isInside = false;
+    for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      const xi = polygon[i].x, yi = polygon[i].y;
+      const xj = polygon[j].x, yj = polygon[j].y;
+      const intersect = ((yi > point.y) !== (yj > point.y))
+          && (point.x < (xj - xi) * (point.y - yi) / (yj - yi) + xi);
+      if (intersect) isInside = !isInside;
+    }
+    return isInside;
+  };
 
   const screenToCanvas = useCallback(
     (sx: number, sy: number): Point => {
@@ -72,6 +100,22 @@ const Canvas = ({
     },
     [gridEnabled]
   );
+
+  const handleContextMenu = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    const pos = screenToCanvas(e.clientX, e.clientY);
+
+    const clickedMachine = machines.find(m => isPointInMachine(pos, m));
+    if (clickedMachine) {
+      onElementRightClick(clickedMachine);
+      return;
+    }
+
+    const clickedSector = sectors.find(s => isPointInPolygon(pos, s.points));
+    if (clickedSector) {
+      onElementRightClick(clickedSector);
+    }
+  }, [screenToCanvas, machines, sectors, onElementRightClick]);
 
   const handleWheel = useCallback(
     (e: React.WheelEvent) => {
@@ -146,22 +190,42 @@ const Canvas = ({
   );
 
   const handleCanvasClick = useCallback(
-    (e: React.MouseEvent) => {
+    async (e: React.MouseEvent) => {
       if (tool === 'machine') {
         const canvasP = snapToGrid(screenToCanvas(e.clientX, e.clientY));
         onPushHistory();
-        const newMachine: Machine = {
-          id: `machine-${Date.now()}`,
-          name: `Machine ${machines.length + 1}`,
-          position: canvasP,
-          status: (['active', 'active', 'active', 'warning', 'error'] as const)[Math.floor(Math.random() * 5)],
-        };
-        onMachinesChange([...machines, newMachine]);
+
+        const machineName = `Machine ${machines.length + 1}`;
+        const machineStatus = (['active', 'active', 'active', 'warning', 'error'] as const)[Math.floor(Math.random() * 5)];
+
+        try {
+          if (!plantId) {
+            console.error("Plant ID is not available.");
+            return;
+          }
+
+          const newMachineData = {
+            plantId: plantId,
+            sectorId: null, // You might want to determine the sector based on position
+            name: machineName,
+            model: "Default Model", // Provide a default or open a modal to ask
+            posX: canvasP.x,
+            posY: canvasP.y,
+            status: machineStatus,
+          };
+
+          const savedMachine = await createMachineApi(newMachineData);
+          onMachinesChange([...machines, savedMachine]);
+
+        } catch (error) {
+          console.error("Failed to save machine:", error);
+          // Optionally, revert the optimistic UI update or notify the user
+        }
         return;
       }
       handleClick(e);
     },
-    [tool, handleClick, snapToGrid, screenToCanvas, machines, onMachinesChange, onPushHistory]
+    [tool, handleClick, snapToGrid, screenToCanvas, machines, onMachinesChange, onPushHistory, plantId]
   );
 
   const handleSectorConfirm = useCallback(
@@ -230,15 +294,20 @@ const Canvas = ({
     <>
       <svg
         ref={svgRef}
-        className="fixed inset-0 w-full h-full bg-canvas"
-        style={{ cursor: isPanning ? 'grabbing' : tool === 'select' ? 'default' : 'crosshair' }}
+        className="absolute top-0 left-0 w-full h-full cursor-grab active:cursor-grabbing"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onMouseLeave={() => setMousePos({ x: -1, y: -1 })}
+        onContextMenu={handleContextMenu}
         onClick={handleCanvasClick}
       >
-        <defs>{renderGrid()}</defs>
+        <defs>
+          <pattern id="grid" width={GRID_SIZE} height={GRID_SIZE} patternUnits="userSpaceOnUse">
+            <circle cx={GRID_SIZE / 2} cy={GRID_SIZE / 2} r={1} fill="hsl(var(--canvas-grid))" />
+          </pattern>
+        </defs>
 
         <g transform={`translate(${pan.x},${pan.y}) scale(${zoom})`}>
           {/* Grid */}

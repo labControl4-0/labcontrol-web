@@ -5,9 +5,12 @@ import TopNav from '@/components/TopNav';
 import LeftToolbar from '@/components/LeftToolbar';
 import DashboardPanel from '@/components/DashboardPanel';
 import Canvas from '@/components/Canvas';
+import MachineModal from '@/components/MachineModal';
+import DeleteConfirmModal from '@/components/DeleteConfirmModal';
 import { getPlantVersions } from '../services/plantVersionService';
-import { createSector, getSectors } from '../services/sectorService';
-import { getMachines } from '../services/machineService';
+import { createSector, getSectors, deleteSector } from '../services/sectorService';
+import { createMachine, getMachines, deleteMachine } from '../services/machineService';
+import { getPlantById } from '../services/plantService';
 import { Sector as ApiSector } from '../interfaces/Sector';
 import { Machine as ApiMachine } from '../interfaces/Machine';
 import { Sector, Machine, HistoryEntry } from '@/types/editor';
@@ -44,6 +47,7 @@ const convertToEditorMachine = (apiMachines: ApiMachine[]): Machine[] => {
 
 const BlueprintPage = () => {
   const { plantId } = useParams<{ plantId: string }>();
+  const [plantName, setPlantName] = useState<string>('');
   const [activeVersionId, setActiveVersionId] = useState<string | null>(null);
   const [tool, setTool] = useState<Tool>('select');
   const [gridEnabled, setGridEnabled] = useState(true);
@@ -52,6 +56,9 @@ const BlueprintPage = () => {
   const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [newMachine, setNewMachine] = useState<Omit<Machine, 'name' | 'status'> | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<{ id: string; name: string; type: 'sector' | 'machine' } | null>(null);
 
 
   useEffect(() => {
@@ -59,6 +66,10 @@ const BlueprintPage = () => {
       if (!plantId) return;
       setLoading(true);
       try {
+        // Fetch plant name
+        const plantData = await getPlantById(plantId);
+        setPlantName(plantData.name);
+
         // Fetch plant versions
         const versions = await getPlantVersions(plantId);
         let activeVersion = versions.find(v => v.isActive);
@@ -122,6 +133,83 @@ const BlueprintPage = () => {
     }
   };
 
+  const handleMachinesChange = (newMachines: Machine[]) => {
+    const addedMachine = newMachines.find(m => !machines.some(om => om.id === m.id));
+
+    if (addedMachine) {
+      setNewMachine(addedMachine);
+      setIsModalOpen(true);
+    } else {
+      setMachines(newMachines);
+    }
+  };
+
+  const handleSaveMachine = async (name: string, model: string, status: string) => {
+    if (!newMachine || !plantId) return;
+
+    // Find which sector the machine is in
+    const sector = sectors.find(s =>
+        newMachine.position.x >= s.points[0].x && newMachine.position.x <= s.points[2].x &&
+        newMachine.position.y >= s.points[0].y && newMachine.position.y <= s.points[2].y
+    );
+
+    if (!sector) {
+        console.error("Machine must be placed inside a sector.");
+        // Revert the temporary machine add
+        setMachines(machines);
+        setIsModalOpen(false);
+        return;
+    }
+
+    try {
+      const createdMachine = await createMachine({
+        plantId: plantId,
+        sectorId: sector.id,
+        name: name,
+        model: model,
+        posX: newMachine.position.x,
+        posY: newMachine.position.y,
+        status: status,
+      });
+
+      const finalMachine = convertToEditorMachine([createdMachine])[0];
+      setMachines(prev => [...prev.filter(m => m.id !== newMachine.id), finalMachine]);
+      setIsModalOpen(false);
+      setNewMachine(null);
+
+    } catch (error) {
+      console.error("Failed to save machine:", error);
+      // Revert the temporary machine add
+      setMachines(machines);
+      setIsModalOpen(false);
+    }
+  };
+
+  const handleElementRightClick = (element: Sector | Machine) => {
+    const type = 'points' in element ? 'sector' : 'machine';
+    setDeleteTarget({ id: element.id, name: element.name, type });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      if (deleteTarget.type === 'sector') {
+        await deleteSector(deleteTarget.id);
+        setSectors(prev => prev.filter(s => s.id !== deleteTarget.id));
+        // Also remove machines that were in the deleted sector
+        setMachines(prev => prev.filter(m => m.sectorId !== deleteTarget.id));
+      } else {
+        await deleteMachine(deleteTarget.id);
+        setMachines(prev => prev.filter(m => m.id !== deleteTarget.id));
+      }
+    } catch (error) {
+      console.error(`Failed to delete ${deleteTarget.type}:`, error);
+    } finally {
+      setDeleteTarget(null);
+    }
+  };
+
 
   const pushHistory = useCallback(() => {
     const entry: HistoryEntry = { sectors: [...sectors], machines: [...machines] };
@@ -178,10 +266,11 @@ const BlueprintPage = () => {
         sectors={sectors}
         machines={machines}
         onSectorsChange={handleSectorsChange}
-        onMachinesChange={setMachines}
+        onMachinesChange={handleMachinesChange}
         onPushHistory={pushHistory}
+        onElementRightClick={handleElementRightClick}
       />
-      <TopNav />
+      <TopNav plantName={plantName} />
       <LeftToolbar
         activeTool={tool}
         onToolChange={setTool}
@@ -193,6 +282,23 @@ const BlueprintPage = () => {
         canRedo={historyIndex < history.length - 1}
       />
       <DashboardPanel machines={machines} />
+      <MachineModal
+        isOpen={isModalOpen}
+        onClose={() => {
+          setIsModalOpen(false);
+          setMachines(machines); // Revert if modal is closed without saving
+        }}
+        onSave={handleSaveMachine}
+      />
+      {deleteTarget && (
+        <DeleteConfirmModal
+          isOpen={!!deleteTarget}
+          onClose={() => setDeleteTarget(null)}
+          onConfirm={handleConfirmDelete}
+          itemName={deleteTarget.name}
+          itemType={deleteTarget.type}
+        />
+      )}
     </div>
   );
 };

@@ -30,13 +30,12 @@ export default function LoginPage() {
 
       console.log("Login success:", data);
 
-      // 💾 salva token (importante)
       localStorage.setItem("token", data.token);
 
       toast.success("Login successful!");
       
-      // 👉 aqui você pode redirecionar depois
-      // window.location.href = "/dashboard";
+      
+      window.location.href = "/plants";
 
     } catch (error) {
       console.error(error);

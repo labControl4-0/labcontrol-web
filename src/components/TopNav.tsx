@@ -1,20 +1,24 @@
 import { Bell, Settings, User, Sun, Moon } from 'lucide-react';
 import { useTheme } from 'next-themes';
 
-const TopNav = () => {
+interface TopNavProps {
+  plantName?: string;
+}
+
+const TopNav = ({ plantName }: TopNavProps) => {
   const { theme, setTheme } = useTheme();
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 h-12 flex items-center justify-between px-5 bg-card/80 backdrop-blur-xl border-b border-border">
       <div className="flex items-center gap-2">
         <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-          <span className="text-primary-foreground text-xs font-bold">F</span>
+          <span className="text-primary-foreground text-xs font-bold"></span>
         </div>
-        <span className="text-sm font-semibold text-foreground tracking-tight">FloorForge</span>
+        <span className="text-sm font-semibold text-foreground tracking-tight">LabControl</span>
       </div>
 
       <div className="absolute left-1/2 -translate-x-1/2">
-        <span className="text-sm font-medium text-foreground">Main Campus — Building A</span>
+        <span className="text-sm font-medium text-foreground">{plantName || '...'}</span>
       </div>
 
       <div className="flex items-center gap-1">
