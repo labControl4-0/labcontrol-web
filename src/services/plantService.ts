@@ -1,6 +1,6 @@
 import { Plant } from '../interfaces/Plant';
 
-const API_BASE_URL = 'http://localhost:5071';
+const API_BASE_URL = 'http://localhost:8080';
 
 export const getPlants = async (): Promise<Plant[]> => {
   const token = localStorage.getItem('token');

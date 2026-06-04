@@ -1,6 +1,6 @@
 import { Machine } from '../interfaces/Machine';
 
-const API_BASE_URL = 'http://localhost:5071';
+const API_BASE_URL = 'http://localhost:8080';
 
 export const getMachines = async (plantId: string): Promise<Machine[]> => {
   const token = localStorage.getItem('token');

@@ -1,6 +1,6 @@
 import { Machine } from '@/types/editor';
 
-const API_URL = 'http://localhost:5071/api';
+const API_URL = 'http://localhost:8080/api';
 
 export const createMachineApi = async (machineData: {
   plantId: string;

@@ -1,6 +1,6 @@
 import { PlantVersion } from '../interfaces/PlantVersion';
 
-const API_BASE_URL = 'http://localhost:5071';
+const API_BASE_URL = 'http://localhost:8080';
 
 export const getPlantVersions = async (plantId: string): Promise<PlantVersion[]> => {
   const token = localStorage.getItem('token');
