@@ -20,8 +20,17 @@ import { useToast } from "@/hooks/use-toast";
 const convertToEditorSector = (apiSectors: ApiSector[]): Sector[] => {
   return apiSectors.map(s => {
     try {
-      const apiPoints: { X: number, Y: number }[] = JSON.parse(s.pointsJson);
-      const editorPoints = apiPoints.map(p => ({ x: p.X, y: p.Y })); // Correctly map points
+      // Support two shapes coming from services: either a pointsJson string
+      // (from the API) or an already-parsed `points` array (some services
+      // parse it before returning). Normalize both to editor Point[] format.
+      let apiPoints: { X: number; Y: number }[] = [];
+      if ((s as any).points && Array.isArray((s as any).points)) {
+        apiPoints = (s as any).points;
+      } else if (typeof s.pointsJson === 'string') {
+        apiPoints = JSON.parse(s.pointsJson);
+      }
+
+  const editorPoints = apiPoints.map(p => ({ x: (p as any).X ?? (p as any).x, y: (p as any).Y ?? (p as any).y }));
       return {
         id: s.id,
         type: 'custom',
@@ -73,11 +82,12 @@ const BlueprintPage = () => {
         const plantData = await getPlantById(plantId);
         setPlantName(plantData.name);
 
-        // Fetch plant versions
-        const versions = await getPlantVersions(plantId);
-        let activeVersion = versions.find(v => v.isActive);
+        // Fetch plant versions (API may return a single object or an array)
+        const versionsResp = await getPlantVersions(plantId);
+        const versions = Array.isArray(versionsResp) ? versionsResp : [versionsResp];
+        let activeVersion = versions.find(v => (v as any)?.isActive);
         if (!activeVersion && versions.length > 0) {
-          activeVersion = versions.sort((a, b) => b.versionNumber - a.versionNumber)[0];
+          activeVersion = versions.sort((a, b) => ((b as any).versionNumber ?? 0) - ((a as any).versionNumber ?? 0))[0];
         }
         if (activeVersion) {
           setActiveVersionId(activeVersion.id); // Save active version ID
@@ -87,6 +97,8 @@ const BlueprintPage = () => {
         if (plantId) {
           const sectorsData = await getSectorsByPlant(plantId);
           fetchedSectors = convertToEditorSector(sectorsData);
+          console.log('BlueprintPage: fetched sectors (raw):', sectorsData);
+          console.log('BlueprintPage: converted sectors (editor):', fetchedSectors);
           setSectors(fetchedSectors);
         }
 
@@ -319,6 +331,8 @@ const BlueprintPage = () => {
   if (loading) {
     return <div>Loading Blueprint...</div>;
   }
+
+  console.log('BlueprintPage: sectors passed to Canvas', sectors);
 
   return (
     <div className="w-screen h-screen overflow-hidden bg-background">
