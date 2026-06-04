@@ -2,7 +2,6 @@ import { useRef, useState, useCallback, useEffect } from 'react';
 import { Point, Sector, Machine, Tool, SectorType } from '@/types/editor';
 import SectorModal from './SectorModal';
 import { Cpu, Pencil, Palette, Trash2 } from 'lucide-react';
-import { createMachineApi } from '@/services/machineApiService';
 import { useParams } from 'react-router-dom';
 
 interface CanvasProps {
@@ -194,33 +193,16 @@ const Canvas = ({
       if (tool === 'machine') {
         const canvasP = snapToGrid(screenToCanvas(e.clientX, e.clientY));
         onPushHistory();
+        // Create a temporary machine locally and let the parent handle the
+        // actual persistence when the user confirms in the MachineModal.
+        const tempMachine: Machine = {
+          id: `machine-${Date.now()}`,
+          name: `Machine ${machines.length + 1}`,
+          position: { x: canvasP.x, y: canvasP.y },
+          status: 'active',
+        };
 
-        const machineName = `Machine ${machines.length + 1}`;
-        const machineStatus = (['active', 'active', 'active', 'warning', 'error'] as const)[Math.floor(Math.random() * 5)];
-
-        try {
-          if (!plantId) {
-            console.error("Plant ID is not available.");
-            return;
-          }
-
-          const newMachineData = {
-            plantId: plantId,
-            sectorId: null, // You might want to determine the sector based on position
-            name: machineName,
-            model: "Default Model", // Provide a default or open a modal to ask
-            posX: canvasP.x,
-            posY: canvasP.y,
-            status: machineStatus,
-          };
-
-          const savedMachine = await createMachineApi(newMachineData);
-          onMachinesChange([...machines, savedMachine]);
-
-        } catch (error) {
-          console.error("Failed to save machine:", error);
-          // Optionally, revert the optimistic UI update or notify the user
-        }
+        onMachinesChange([...machines, tempMachine]);
         return;
       }
       handleClick(e);
