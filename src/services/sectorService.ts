@@ -33,11 +33,10 @@ export interface CreateSectorDto {
 export const createSector = async (sectorData: CreateSectorDto): Promise<Sector> => {
   const token = localStorage.getItem('token');
 
-  // The backend expects points with uppercase X and Y
   const payload = {
     ...sectorData,
     points: sectorData.points.map(p => ({ X: p.x, Y: p.y })),
-    areaM2: 0, // Assuming default area, adjust if needed
+    areaM2: 0,
   };
 
   const response = await fetch(`${API_BASE_URL}/sectors`, {
@@ -50,14 +49,12 @@ export const createSector = async (sectorData: CreateSectorDto): Promise<Sector>
   });
 
   if (!response.ok) {
-    throw new Error('Failed to create sector');
+    const errorText = await response.text();
+    throw new Error(`Failed to create sector: ${errorText}`);
   }
 
   const createdSector = await response.json();
-  return {
-    ...createdSector,
-    points: JSON.parse(createdSector.pointsJson)
-  };
+  return { ...createdSector, points: JSON.parse(createdSector.pointsJson) };
 };
 
 export const deleteSector = async (sectorId: string): Promise<void> => {

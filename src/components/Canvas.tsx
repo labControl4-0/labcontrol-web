@@ -215,11 +215,12 @@ const Canvas = ({
       if (!sectorModal) return;
       onPushHistory();
       const newSector: Sector = {
-        id: `sector-${Date.now()}`,
-        name,
-        color,
-        type,
-        points: sectorModal.points,
+  id: `sector-${Date.now()}`,
+  plantId: plantId ?? '',
+  name,
+  color,
+  type,
+  points: sectorModal.points,
       };
       onSectorsChange([...sectors, newSector]);
       setSectorModal(null);

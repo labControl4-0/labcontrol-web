@@ -33,6 +33,7 @@ const convertToEditorSector = (apiSectors: ApiSector[]): Sector[] => {
   const editorPoints = apiPoints.map(p => ({ x: (p as any).X ?? (p as any).x, y: (p as any).Y ?? (p as any).y }));
       return {
         id: s.id,
+        plantId: (s as any).plantId ?? '',
         type: 'custom',
         name: s.name,
         color: s.color,
@@ -40,7 +41,7 @@ const convertToEditorSector = (apiSectors: ApiSector[]): Sector[] => {
       };
     } catch (e) {
       console.error("Failed to parse points for sector", s.id, e);
-      return { id: s.id, type: 'custom', name: s.name, color: s.color, points: [] };
+  return { id: s.id, plantId: (s as any).plantId ?? '', type: 'custom', name: s.name, color: s.color, points: [] };
     }
   });
 };

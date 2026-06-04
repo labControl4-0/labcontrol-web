@@ -5,6 +5,7 @@ export interface Point {
 
 export interface Sector {
   id: string;
+  plantId: string;
   name: string;
   color: string;
   type: SectorType;
