@@ -12,3 +12,9 @@ services:
     # For local host backend, nginx uses host.docker.internal to reach host.
     extra_hosts:
       - "host.docker.internal:host-gateway"
+    networks:
+      - labcontrol-network
+
+networks:
+  labcontrol-network:
+    external: true
