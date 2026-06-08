@@ -125,7 +125,7 @@ export default function LoginPage() {
           {/* FOOTER */}
           <div className="text-center text-sm text-gray-400">
             Don’t have an account?{" "}
-            <a href="#" className="text-blue-400 hover:underline">
+            <a href="/register" className="text-blue-400 hover:underline">
               Create one
             </a>
           </div>
