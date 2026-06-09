@@ -11,7 +11,7 @@ export default function registerPage() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:8080/api/Auth/register", {
+      const response = await fetch("/api/Auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

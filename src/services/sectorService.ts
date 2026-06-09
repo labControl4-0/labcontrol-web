@@ -1,6 +1,6 @@
 import { Sector } from '../interfaces/Sector';
 
-const API_BASE_URL = 'http://localhost:8080/api';
+const API_BASE_URL = '/api';
 
 export const getSectorsByPlant = async (plantId: string): Promise<Sector[]> => {
   const token = localStorage.getItem('token');

@@ -10,7 +10,7 @@ export default function LoginPage() {
     e.preventDefault();
 
     try {
-      const response = await fetch("http://localhost:8080/api/Auth/login", {
+      const response = await fetch("/api/Auth/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
