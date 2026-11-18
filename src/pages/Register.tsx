@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
 
-export default function registerPage() {
+export default function RegisterPage() {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
