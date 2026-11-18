@@ -186,6 +186,11 @@
   to { opacity: 1; transform: none; }
 }
 
+@keyframes auth-reveal {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
 @keyframes auth-shake {
   0%, 100% { transform: none; }
   20% { transform: translateX(-4px); }
@@ -198,6 +203,12 @@
 .auth-pop-in {
   transform-box: fill-box;
   transform-origin: center;
+}
+
+.auth-reveal {
+  transform-box: fill-box;
+  transform-origin: left;
+  animation: auth-reveal 0.9s ease-out both;
 }
 
 .auth-ring-running { animation: auth-breathe 2.5s ease-in-out infinite; }
@@ -226,6 +237,7 @@
   .auth-ring-warning { opacity: 0.3; }
 
   .auth-draw { stroke-dasharray: none; animation: auth-fade-in 0.4s ease-out both; }
+  .auth-reveal { animation: none; }
 
   .auth-pop-in,
   .auth-fade-up,

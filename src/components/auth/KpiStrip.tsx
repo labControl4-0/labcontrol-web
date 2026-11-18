@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useId, useState } from "react";
 import { cn } from "@/lib/utils";
 import { useCountUp } from "@/hooks/use-count-up";
 import { KPI_HISTORY_SEED, type PlantKpis } from "./plantMock";
@@ -18,6 +18,7 @@ const KPI_CONFIG: { key: keyof PlantKpis; label: string; unit: string; color: st
 ];
 
 const Sparkline = ({ values, color }: { values: number[]; color: string }) => {
+  const clipId = useId();
   const min = Math.min(...values);
   const max = Math.max(...values);
   const range = max - min || 1;
@@ -31,6 +32,10 @@ const Sparkline = ({ values, color }: { values: number[]; color: string }) => {
 
   return (
     <svg viewBox="0 0 100 24" preserveAspectRatio="none" aria-hidden="true" className="mt-1 h-6 w-full">
+      {/* Revealed left to right by scaling a clip rect: dash tricks break with a stretched viewBox */}
+      <clipPath id={clipId}>
+        <rect width={100} height={24} className="auth-reveal" style={{ animationDelay: "0.9s" }} />
+      </clipPath>
       <path
         d={points}
         fill="none"
@@ -38,9 +43,7 @@ const Sparkline = ({ values, color }: { values: number[]; color: string }) => {
         strokeWidth={1.5}
         strokeLinejoin="round"
         vectorEffect="non-scaling-stroke"
-        pathLength={1}
-        className="auth-draw"
-        style={{ animationDelay: "0.9s", animationDuration: "0.9s" }}
+        clipPath={`url(#${clipId})`}
       />
     </svg>
   );
