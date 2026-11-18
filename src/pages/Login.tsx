@@ -1,11 +1,10 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
-import { AlertCircle, Loader2 } from "lucide-react";
-import AuthLayout from "@/components/auth/AuthLayout";
+import { Loader2 } from "lucide-react";
+import FormError from "@/components/auth/FormError";
 import PasswordInput from "@/components/auth/PasswordInput";
-
-const inputClassName =
-  "autofill-dark h-12 w-full rounded-[10px] border border-gray-700 bg-[#0B0F17] px-3.5 text-[15px] text-white placeholder:text-gray-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40";
+import { authInputClassName } from "@/components/auth/authStyles";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -55,13 +54,13 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthLayout>
+    <>
       <header className="flex flex-col gap-1.5">
         <h1 className="text-[28px] font-bold tracking-tight">Sign in</h1>
         <p className="text-sm text-gray-400">Use the email registered with your company.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[18px] [@media(max-height:640px)]:gap-3.5">
         <div className="flex flex-col gap-2">
           <label htmlFor="email" className="text-[13px] font-medium text-gray-300">
             Email
@@ -77,7 +76,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "login-error" : undefined}
-            className={inputClassName}
+            className={authInputClassName}
           />
         </div>
 
@@ -100,20 +99,11 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "login-error" : undefined}
-            className={inputClassName}
+            className={authInputClassName}
           />
         </div>
 
-        {error && (
-          <div
-            id="login-error"
-            role="alert"
-            className="flex items-start gap-2.5 rounded-[10px] border border-red-400/35 bg-red-500/10 px-3.5 py-3 text-[13px] leading-snug text-red-200"
-          >
-            <AlertCircle className="mt-px h-[18px] w-[18px] shrink-0 text-red-400" aria-hidden="true" />
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <FormError id="login-error" message={error} />}
 
         <button
           type="submit"
@@ -128,10 +118,10 @@ export default function LoginPage() {
 
       <p className="text-sm text-gray-400">
         Don’t have an account?{" "}
-        <a href="/register" className="text-blue-400 hover:text-blue-300 hover:underline">
+        <Link to="/register" className="text-blue-400 hover:text-blue-300 hover:underline">
           Create one
-        </a>
+        </Link>
       </p>
-    </AuthLayout>
+    </>
   );
 }
