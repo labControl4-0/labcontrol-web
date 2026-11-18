@@ -133,15 +133,15 @@ export default function RegisterPage() {
               disabled={loading}
               className="mt-4 w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all rounded-lg py-3 font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/20"
             >
-              {loading ? "Signing in..." : "Sign In"}
+              {loading ? "Creating account..." : "Create account"}
             </button>
           </form>
 
           {/* FOOTER */}
           <div className="text-center text-sm text-gray-400">
-            Don’t have an account?{" "}
-            <a href="#" className="text-blue-400 hover:underline">
-              Create one
+            Already have an account?{" "}
+            <a href="/" className="text-blue-400 hover:underline">
+              Sign in
             </a>
           </div>
         </div>
