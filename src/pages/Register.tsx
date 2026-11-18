@@ -1,5 +1,8 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
+import AuthLayout from "@/components/auth/AuthLayout";
+import PasswordInput from "@/components/auth/PasswordInput";
+import { authInputClassName } from "@/components/auth/authStyles";
 
 export default function RegisterPage() {
   const [name, setName] = useState("");
@@ -46,100 +49,78 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0B0F17] text-white flex items-center justify-center relative overflow-hidden font-sans">
-      
-      {/* GRID BACKGROUND */}
-      <div className="absolute inset-0 bg-[radial-gradient(rgba(255,255,255,0.04)_1px,transparent_1px)] [background-size:18px_18px]" />
+    <AuthLayout>
+      <header className="flex flex-col gap-1.5">
+        <h1 className="text-[28px] font-bold tracking-tight">Create your account</h1>
+        <p className="text-sm text-gray-400">Fill in your details to get started.</p>
+      </header>
 
-      {/* LIGHT EFFECT */}
-      <div className="absolute w-[500px] h-[500px] bg-blue-500/10 blur-[120px] rounded-full top-1/3 left-1/4" />
-
-      {/* CARD */}
-      <div className="relative z-10 w-full max-w-md px-6">
-        <div className="bg-[#111827]/80 backdrop-blur-xl border border-white/10 rounded-2xl p-8 shadow-2xl flex flex-col gap-6">
-          
-          {/* HEADER */}
-          <div className="text-center flex flex-col items-center gap-2">
-            <div className="w-14 h-14 rounded-full bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
-              <span className="material-symbols-outlined text-blue-400 text-3xl">
-                precision_manufacturing
-              </span>
-            </div>
-
-            <h1 className="text-xl font-semibold tracking-tight">
-              LabControll 4.0
-            </h1>
-
-            <p className="text-sm text-gray-400">
-              Industrial Monitoring Platform
-            </p>
-          </div>
-
-          {/* FORM */}
-          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-            {/* NAME */}
-            <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wider">
-                Name
-              </label>
-
-              <input
-                type="text"
-                placeholder="John Doe"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-              />
-            </div>
-            {/* EMAIL */}
-            <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wider">
-                Email
-              </label>
-
-              <input
-                type="email"
-                placeholder="admin@labcontrol.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-              />
-            </div>
-
-            {/* PASSWORD */}
-            <div>
-              <label className="text-xs text-gray-400 uppercase tracking-wider">
-                Password
-              </label>
-
-              <input
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="mt-1 w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
-              />
-            </div>
-
-            {/* BUTTON */}
-            <button
-              type="submit"
-              disabled={loading}
-              className="mt-4 w-full bg-blue-600 hover:bg-blue-500 disabled:opacity-50 transition-all rounded-lg py-3 font-medium flex items-center justify-center gap-2 shadow-lg hover:shadow-blue-500/20"
-            >
-              {loading ? "Creating account..." : "Create account"}
-            </button>
-          </form>
-
-          {/* FOOTER */}
-          <div className="text-center text-sm text-gray-400">
-            Already have an account?{" "}
-            <a href="/" className="text-blue-400 hover:underline">
-              Sign in
-            </a>
-          </div>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="name" className="text-[13px] font-medium text-gray-300">
+            Name
+          </label>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            autoComplete="name"
+            required
+            placeholder="Your full name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className={authInputClassName}
+          />
         </div>
-      </div>
-    </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="email" className="text-[13px] font-medium text-gray-300">
+            Email
+          </label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            required
+            placeholder="name@company.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className={authInputClassName}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="password" className="text-[13px] font-medium text-gray-300">
+            Password
+          </label>
+          <PasswordInput
+            id="password"
+            name="password"
+            autoComplete="new-password"
+            required
+            placeholder="Create a password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className={authInputClassName}
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className="mt-1.5 flex h-12 items-center justify-center gap-2 rounded-[10px] bg-blue-600 text-[15px] font-semibold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#111827] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {loading ? "Creating account..." : "Create account"}
+        </button>
+      </form>
+
+      <p className="text-sm text-gray-400">
+        Already have an account?{" "}
+        <a href="/" className="text-blue-400 hover:text-blue-300 hover:underline">
+          Sign in
+        </a>
+      </p>
+    </AuthLayout>
   );
 }
