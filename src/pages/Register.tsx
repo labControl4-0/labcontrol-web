@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { authInputClassName } from "@/components/auth/authStyles";
@@ -12,6 +13,9 @@ export default function RegisterPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (loading) return;
+    setLoading(true);
 
     try {
       const response = await fetch("/api/Auth/register", {
@@ -45,6 +49,8 @@ export default function RegisterPage() {
     } catch (error) {
       console.error(error);
       toast.error("sign up failed. Check email or password.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -109,8 +115,10 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
+          aria-busy={loading}
           className="mt-1.5 flex h-12 items-center justify-center gap-2 rounded-[10px] bg-blue-600 text-[15px] font-semibold text-white transition hover:bg-blue-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-400 focus-visible:ring-offset-2 focus-visible:ring-offset-[#111827] disabled:cursor-not-allowed disabled:opacity-60"
         >
+          {loading && <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />}
           {loading ? "Creating account..." : "Create account"}
         </button>
       </form>
