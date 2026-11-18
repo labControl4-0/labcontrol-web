@@ -13,6 +13,8 @@ const AuthShowcase = ({ className }: AuthShowcaseProps) => {
       aria-label="About LabControl"
       className={cn(
         "min-h-0 min-w-0 flex-col justify-between gap-8 border-r border-white/5 px-12 py-10 xl:px-14 xl:py-12",
+        // Short windows (e.g. 125%+ display scaling): tighter spacing leaves room for the plant
+        "[@media(max-height:640px)]:gap-5 [@media(max-height:640px)]:py-6",
         "bg-[#0B1220] bg-[linear-gradient(rgba(96,165,250,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(96,165,250,0.06)_1px,transparent_1px)] bg-[size:32px_32px]",
         className,
       )}
@@ -20,7 +22,7 @@ const AuthShowcase = ({ className }: AuthShowcaseProps) => {
       <BrandMark className="shrink-0" />
 
       {/* Shrinks with the window height and disappears when there is no room left */}
-      <PlantIllustration className="h-auto min-h-[160px] max-h-[300px] flex-1 [@media(max-height:600px)]:hidden" />
+      <PlantIllustration className="h-auto min-h-[120px] max-h-[300px] flex-1 [@media(max-height:420px)]:hidden" />
 
       <div className="flex max-w-[520px] shrink-0 flex-col gap-4">
         <h2 className="text-[34px] font-bold leading-tight tracking-tight text-white">
