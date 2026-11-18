@@ -1,0 +1,18 @@
+version: '3.8'
+services:
+  web:
+    build: .
+    ports:
+      - "3000:80"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    # If your backend runs in another container on the same compose network,
+    # create a network and set proxy_pass to http://labcontrol-api:8080
+    # For local host backend, nginx uses host.docker.internal to reach host.
+    networks:
+      - labcontrol-network
+
+networks:
+  labcontrol-network:
+    external: true
