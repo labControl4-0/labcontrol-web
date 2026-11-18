@@ -38,10 +38,7 @@ export default function RegisterPage() {
         throw new Error("Invalid credentials");
       }
 
-      const data = await response.json();
-
-      localStorage.setItem("token", data.token);
-
+      // The register endpoint returns the user without a token: sign-in happens on the login screen
       toast.success("Sign Up successful!");
 
       
