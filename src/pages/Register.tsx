@@ -40,8 +40,6 @@ export default function RegisterPage() {
 
       const data = await response.json();
 
-      console.log("Sign Up success:", data);
-
       localStorage.setItem("token", data.token);
 
       toast.success("Sign Up successful!");
