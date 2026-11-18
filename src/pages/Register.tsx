@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import AuthLayout from "@/components/auth/AuthLayout";
+import FormError from "@/components/auth/FormError";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { authInputClassName } from "@/components/auth/authStyles";
 
@@ -10,12 +11,14 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (loading) return;
     setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch("/api/Auth/register", {
@@ -48,7 +51,7 @@ export default function RegisterPage() {
 
     } catch (error) {
       console.error(error);
-      toast.error("sign up failed. Check email or password.");
+      setError("We couldn't create your account. Check your details or try another email.");
     } finally {
       setLoading(false);
     }
@@ -75,6 +78,7 @@ export default function RegisterPage() {
             placeholder="Your full name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            aria-describedby={error ? "register-error" : undefined}
             className={authInputClassName}
           />
         </div>
@@ -92,6 +96,7 @@ export default function RegisterPage() {
             placeholder="name@company.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            aria-describedby={error ? "register-error" : undefined}
             className={authInputClassName}
           />
         </div>
@@ -108,9 +113,12 @@ export default function RegisterPage() {
             placeholder="Create a password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            aria-describedby={error ? "register-error" : undefined}
             className={authInputClassName}
           />
         </div>
+
+        {error && <FormError id="register-error" message={error} />}
 
         <button
           type="submit"
