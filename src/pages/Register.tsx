@@ -59,7 +59,7 @@ export default function RegisterPage() {
         <p className="text-sm text-gray-400">Fill in your details to get started.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[18px] [@media(max-height:640px)]:gap-3.5">
         <div className="flex flex-col gap-2">
           <label htmlFor="name" className="text-[13px] font-medium text-gray-300">
             Name

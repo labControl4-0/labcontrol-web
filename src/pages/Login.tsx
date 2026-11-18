@@ -60,7 +60,7 @@ export default function LoginPage() {
         <p className="text-sm text-gray-400">Use the email registered with your company.</p>
       </header>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-[18px]">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[18px] [@media(max-height:640px)]:gap-3.5">
         <div className="flex flex-col gap-2">
           <label htmlFor="email" className="text-[13px] font-medium text-gray-300">
             Email
