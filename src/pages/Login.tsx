@@ -3,9 +3,7 @@ import { toast } from "sonner";
 import { AlertCircle, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
-
-const inputClassName =
-  "autofill-dark h-12 w-full rounded-[10px] border border-gray-700 bg-[#0B0F17] px-3.5 text-[15px] text-white placeholder:text-gray-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/40";
+import { authInputClassName } from "@/components/auth/authStyles";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -77,7 +75,7 @@ export default function LoginPage() {
             onChange={(e) => setEmail(e.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "login-error" : undefined}
-            className={inputClassName}
+            className={authInputClassName}
           />
         </div>
 
@@ -100,7 +98,7 @@ export default function LoginPage() {
             onChange={(e) => setPassword(e.target.value)}
             aria-invalid={error ? true : undefined}
             aria-describedby={error ? "login-error" : undefined}
-            className={inputClassName}
+            className={authInputClassName}
           />
         </div>
 
