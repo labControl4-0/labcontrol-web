@@ -39,8 +39,6 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      console.log("Login success:", data);
-
       localStorage.setItem("token", data.token);
 
       toast.success("Login successful!");
