@@ -14,8 +14,8 @@ const AuthLayout = ({ children }: AuthLayoutProps) => {
     <div className="flex h-dvh overflow-hidden bg-[#0B0F17] font-sans text-white">
       <AuthShowcase className="hidden flex-[999_1_560px] lg:flex" />
 
-      <main className="flex min-h-0 min-w-0 flex-[1_1_440px] overflow-y-auto bg-[#111827] px-6 py-8">
-        <div className="m-auto flex w-full max-w-[380px] flex-col gap-7">
+      <main className="flex min-h-0 min-w-0 flex-[1_1_440px] overflow-y-auto bg-[#111827] px-6 py-8 [@media(max-height:640px)]:py-4">
+        <div className="m-auto flex w-full max-w-[380px] flex-col gap-7 [@media(max-height:640px)]:gap-5">
           <BrandMark className="lg:hidden" />
           {children}
         </div>
