@@ -108,15 +108,9 @@ export default function RegisterPage() {
 
             {/* PASSWORD */}
             <div>
-              <div className="flex justify-between items-center">
-                <label className="text-xs text-gray-400 uppercase tracking-wider">
-                  Password
-                </label>
-
-                <a href="#" className="text-xs text-blue-400 hover:underline">
-                  Forgot?
-                </a>
-              </div>
+              <label className="text-xs text-gray-400 uppercase tracking-wider">
+                Password
+              </label>
 
               <input
                 type="password"
