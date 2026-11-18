@@ -1,5 +1,6 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import RegisterPage from "@/pages/Register";
 
 const fillAndSubmit = () => {
@@ -17,7 +18,7 @@ describe("RegisterPage", () => {
   });
 
   it("renders labeled fields with sign-up autocomplete hints", () => {
-    render(<RegisterPage />);
+    render(<RegisterPage />, { wrapper: MemoryRouter });
 
     expect(screen.getByLabelText("Name")).toHaveAttribute("autocomplete", "name");
     expect(screen.getByLabelText("Email")).toHaveAttribute("autocomplete", "email");
@@ -25,24 +26,16 @@ describe("RegisterPage", () => {
   });
 
   it("links back to the sign-in screen", () => {
-    render(<RegisterPage />);
+    render(<RegisterPage />, { wrapper: MemoryRouter });
 
     expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/");
     expect(screen.queryByRole("link", { name: /forgot/i })).not.toBeInTheDocument();
   });
 
-  it("keeps the brand name out of browser translation", () => {
-    render(<RegisterPage />);
-
-    for (const brand of screen.getAllByText("LabControl 4.0")) {
-      expect(brand.closest("[translate='no']")).not.toBeNull();
-    }
-  });
-
   it("shows loading and sends the request only once", () => {
     const fetchMock = vi.fn(() => new Promise<Response>(() => {}));
     vi.stubGlobal("fetch", fetchMock);
-    render(<RegisterPage />);
+    render(<RegisterPage />, { wrapper: MemoryRouter });
 
     fillAndSubmit();
     const button = screen.getByRole("button", { name: /creating account/i });
@@ -55,7 +48,7 @@ describe("RegisterPage", () => {
   it("shows an inline error when sign-up is rejected", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false }) as Response));
     vi.spyOn(console, "error").mockImplementation(() => {});
-    render(<RegisterPage />);
+    render(<RegisterPage />, { wrapper: MemoryRouter });
 
     fillAndSubmit();
 
@@ -72,7 +65,7 @@ describe("RegisterPage", () => {
     vi.stubGlobal("fetch", fetchMock);
     vi.spyOn(console, "error").mockImplementation(() => {});
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    render(<RegisterPage />);
+    render(<RegisterPage />, { wrapper: MemoryRouter });
 
     fillAndSubmit();
 

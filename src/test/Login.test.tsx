@@ -1,5 +1,6 @@
 import { afterEach, describe, it, expect, vi } from "vitest";
 import { fireEvent, render, screen } from "@testing-library/react";
+import { MemoryRouter } from "react-router-dom";
 import LoginPage from "@/pages/Login";
 
 const fillAndSubmit = () => {
@@ -15,24 +16,16 @@ describe("LoginPage", () => {
   });
 
   it("renders labeled email and password fields", () => {
-    render(<LoginPage />);
+    render(<LoginPage />, { wrapper: MemoryRouter });
 
     expect(screen.getByLabelText("Email")).toHaveAttribute("autocomplete", "email");
     expect(screen.getByLabelText("Password")).toHaveAttribute("autocomplete", "current-password");
   });
 
-  it("keeps the brand name out of browser translation", () => {
-    render(<LoginPage />);
-
-    for (const brand of screen.getAllByText("LabControl 4.0")) {
-      expect(brand.closest("[translate='no']")).not.toBeNull();
-    }
-  });
-
   it("shows loading and sends the request only once", () => {
     const fetchMock = vi.fn(() => new Promise<Response>(() => {}));
     vi.stubGlobal("fetch", fetchMock);
-    render(<LoginPage />);
+    render(<LoginPage />, { wrapper: MemoryRouter });
 
     fillAndSubmit();
     const button = screen.getByRole("button", { name: /signing in/i });
@@ -45,7 +38,7 @@ describe("LoginPage", () => {
   it("shows an inline error when the credentials are rejected", async () => {
     vi.stubGlobal("fetch", vi.fn(async () => ({ ok: false }) as Response));
     vi.spyOn(console, "error").mockImplementation(() => {});
-    render(<LoginPage />);
+    render(<LoginPage />, { wrapper: MemoryRouter });
 
     fillAndSubmit();
 
@@ -61,7 +54,7 @@ describe("LoginPage", () => {
     );
     vi.spyOn(console, "error").mockImplementation(() => {});
     const logSpy = vi.spyOn(console, "log").mockImplementation(() => {});
-    render(<LoginPage />);
+    render(<LoginPage />, { wrapper: MemoryRouter });
 
     fillAndSubmit();
 

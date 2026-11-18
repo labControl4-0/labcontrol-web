@@ -130,12 +130,118 @@
     transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
-  /* Keeps dark inputs dark when the browser autofills saved credentials */
+  /* Keeps dark inputs dark when the browser autofills saved credentials:
+     the inset shadow paints over Chrome's autofill background */
   .autofill-dark:-webkit-autofill,
-  .autofill-dark:-webkit-autofill:hover,
+  .autofill-dark:-webkit-autofill:hover {
+    -webkit-text-fill-color: #f9fafb;
+    caret-color: #f9fafb;
+    box-shadow: 0 0 0 1000px #0b0f17 inset;
+  }
+
   .autofill-dark:-webkit-autofill:focus {
     -webkit-text-fill-color: #f9fafb;
     caret-color: #f9fafb;
-    transition: background-color 9999s ease-out 0s;
+    box-shadow: 0 0 0 1000px #0b0f17 inset, 0 0 0 3px rgba(59, 130, 246, 0.25), 0 0 16px rgba(59, 130, 246, 0.2);
   }
+}
+
+/* Auth screens motion: animates only transform, opacity and stroke-dashoffset */
+@keyframes auth-breathe {
+  0%, 100% { transform: scale(0.9); opacity: 0.5; }
+  50% { transform: scale(1.5); opacity: 0.12; }
+}
+
+@keyframes auth-pulse-warning {
+  0%, 100% { transform: scale(0.9); opacity: 0.75; }
+  50% { transform: scale(1.9); opacity: 0.08; }
+}
+
+@keyframes auth-flow {
+  to { stroke-dashoffset: -16; }
+}
+
+@keyframes auth-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+
+@keyframes auth-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes auth-fade-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes auth-pop-in {
+  from { opacity: 0; transform: scale(0.4); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes auth-card-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@keyframes auth-reveal {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes auth-shake {
+  0%, 100% { transform: none; }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-3px); }
+  80% { transform: translateX(2px); }
+}
+
+.auth-ring,
+.auth-pop-in {
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.auth-reveal {
+  transform-box: fill-box;
+  transform-origin: left;
+  animation: auth-reveal 0.9s ease-out both;
+}
+
+.auth-ring-running { animation: auth-breathe 2.5s ease-in-out infinite; }
+.auth-ring-warning { animation: auth-pulse-warning 3.6s ease-in-out infinite; }
+.auth-flow { stroke-dasharray: 3 13; animation: auth-flow 0.9s linear infinite; }
+/* Needs pathLength="1" on the element */
+.auth-draw { stroke-dasharray: 1; animation: auth-draw 0.7s ease-out both; }
+.auth-pop-in { animation: auth-pop-in 0.35s cubic-bezier(0.2, 0.8, 0.2, 1.2) both; }
+.auth-fade-in { animation: auth-fade-in 0.4s ease-out both; }
+.auth-fade-up { animation: auth-fade-up 0.5s ease-out both; }
+.auth-card-in { animation: auth-card-in 0.3s ease-out both; }
+.auth-shake { animation: auth-shake 0.4s ease-in-out; }
+.auth-layer { transition: opacity 0.8s ease; }
+.auth-meter-fill { transform-origin: left; transition: transform 0.3s ease, opacity 0.3s ease; }
+
+/* Background tab: freeze every loop */
+.auth-paused * { animation-play-state: paused !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-ring-running,
+  .auth-ring-warning,
+  .auth-flow,
+  .auth-shake { animation: none; }
+
+  .auth-ring-running,
+  .auth-ring-warning { opacity: 0.3; }
+
+  .auth-draw { stroke-dasharray: none; animation: auth-fade-in 0.4s ease-out both; }
+  .auth-reveal { animation: none; }
+
+  .auth-pop-in,
+  .auth-fade-up,
+  .auth-card-in { animation: auth-fade-in 0.4s ease-out both; }
+
+  .auth-meter-fill { transition: opacity 0.3s ease; }
 }

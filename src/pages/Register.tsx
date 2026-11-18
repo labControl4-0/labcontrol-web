@@ -1,9 +1,10 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import AuthLayout from "@/components/auth/AuthLayout";
 import FormError from "@/components/auth/FormError";
 import PasswordInput from "@/components/auth/PasswordInput";
+import PasswordStrength from "@/components/auth/PasswordStrength";
 import { authInputClassName } from "@/components/auth/authStyles";
 
 export default function RegisterPage() {
@@ -53,7 +54,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthLayout>
+    <>
       <header className="flex flex-col gap-1.5">
         <h1 className="text-[28px] font-bold tracking-tight">Create your account</h1>
         <p className="text-sm text-gray-400">Fill in your details to get started.</p>
@@ -108,9 +109,10 @@ export default function RegisterPage() {
             placeholder="Create a password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            aria-describedby={error ? "register-error" : undefined}
+            aria-describedby={[password && "password-strength", error && "register-error"].filter(Boolean).join(" ") || undefined}
             className={authInputClassName}
           />
+          <PasswordStrength id="password-strength" password={password} />
         </div>
 
         {error && <FormError id="register-error" message={error} />}
@@ -128,10 +130,10 @@ export default function RegisterPage() {
 
       <p className="text-sm text-gray-400">
         Already have an account?{" "}
-        <a href="/" className="text-blue-400 hover:text-blue-300 hover:underline">
+        <Link to="/" className="text-blue-400 hover:text-blue-300 hover:underline">
           Sign in
-        </a>
+        </Link>
       </p>
-    </AuthLayout>
+    </>
   );
 }

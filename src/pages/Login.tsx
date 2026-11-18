@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { Link } from "react-router-dom";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import AuthLayout from "@/components/auth/AuthLayout";
 import FormError from "@/components/auth/FormError";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { authInputClassName } from "@/components/auth/authStyles";
@@ -54,7 +54,7 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthLayout>
+    <>
       <header className="flex flex-col gap-1.5">
         <h1 className="text-[28px] font-bold tracking-tight">Sign in</h1>
         <p className="text-sm text-gray-400">Use the email registered with your company.</p>
@@ -118,10 +118,10 @@ export default function LoginPage() {
 
       <p className="text-sm text-gray-400">
         Don’t have an account?{" "}
-        <a href="/register" className="text-blue-400 hover:text-blue-300 hover:underline">
+        <Link to="/register" className="text-blue-400 hover:text-blue-300 hover:underline">
           Create one
-        </a>
+        </Link>
       </p>
-    </AuthLayout>
+    </>
   );
 }
