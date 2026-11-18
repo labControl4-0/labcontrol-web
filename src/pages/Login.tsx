@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/auth/AuthLayout";
 import PasswordInput from "@/components/auth/PasswordInput";
 
@@ -11,12 +11,14 @@ export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (loading) return;
     setLoading(true);
+    setError(null);
 
     try {
       const response = await fetch("/api/Auth/login", {
@@ -48,7 +50,7 @@ export default function LoginPage() {
 
     } catch (error) {
       console.error(error);
-      toast.error("Login failed. Check email or password.");
+      setError("Invalid email or password. Check your details and try again.");
     } finally {
       setLoading(false);
     }
@@ -75,6 +77,8 @@ export default function LoginPage() {
             placeholder="name@company.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "login-error" : undefined}
             className={inputClassName}
           />
         </div>
@@ -96,9 +100,22 @@ export default function LoginPage() {
             placeholder="Your password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            aria-invalid={error ? true : undefined}
+            aria-describedby={error ? "login-error" : undefined}
             className={inputClassName}
           />
         </div>
+
+        {error && (
+          <div
+            id="login-error"
+            role="alert"
+            className="flex items-start gap-2.5 rounded-[10px] border border-red-400/35 bg-red-500/10 px-3.5 py-3 text-[13px] leading-snug text-red-200"
+          >
+            <AlertCircle className="mt-px h-[18px] w-[18px] shrink-0 text-red-400" aria-hidden="true" />
+            <span>{error}</span>
+          </div>
+        )}
 
         <button
           type="submit"
