@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { toast } from "sonner";
-import { AlertCircle, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import AuthLayout from "@/components/auth/AuthLayout";
+import FormError from "@/components/auth/FormError";
 import PasswordInput from "@/components/auth/PasswordInput";
 import { authInputClassName } from "@/components/auth/authStyles";
 
@@ -102,16 +103,7 @@ export default function LoginPage() {
           />
         </div>
 
-        {error && (
-          <div
-            id="login-error"
-            role="alert"
-            className="flex items-start gap-2.5 rounded-[10px] border border-red-400/35 bg-red-500/10 px-3.5 py-3 text-[13px] leading-snug text-red-200"
-          >
-            <AlertCircle className="mt-px h-[18px] w-[18px] shrink-0 text-red-400" aria-hidden="true" />
-            <span>{error}</span>
-          </div>
-        )}
+        {error && <FormError id="login-error" message={error} />}
 
         <button
           type="submit"
