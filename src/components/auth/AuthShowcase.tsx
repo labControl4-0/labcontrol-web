@@ -25,11 +25,11 @@ const AuthShowcase = ({ className }: AuthShowcaseProps) => {
       <PlantIllustration className="h-auto min-h-[120px] max-h-[300px] flex-1 [@media(max-height:420px)]:hidden" />
 
       <div className="flex max-w-[520px] shrink-0 flex-col gap-4">
-        <h2 className="text-[34px] font-bold leading-tight tracking-tight text-white">
+        <h2 className="text-[34px] font-bold leading-tight tracking-tight text-white [@media(max-height:640px)]:text-[28px]">
           Your plant, in real time.
         </h2>
         <p className="text-base leading-relaxed text-gray-400">
-          Track machines, alerts and energy usage for every sector in one place.
+          Track machines, alerts and energy usage in one place.
         </p>
         <StatusLegend />
       </div>
