@@ -34,12 +34,19 @@ const sectors: IllustrationSector[] = [
   },
 ];
 
-const PlantIllustration = () => {
+interface PlantIllustrationProps {
+  className?: string;
+}
+
+const PlantIllustration = ({ className }: PlantIllustrationProps) => {
   return (
     <div
       role="img"
       aria-label="Floor plan illustration with three sectors and machines running, in warning and stopped"
-      className="grid h-[300px] w-full max-w-[560px] grid-cols-3 rounded-md border-[1.5px] border-blue-300/45"
+      className={cn(
+        "grid h-[300px] w-full max-w-[560px] grid-cols-3 rounded-md border-[1.5px] border-blue-300/45",
+        className,
+      )}
     >
       {sectors.map((sector, index) => (
         <div
