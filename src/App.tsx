@@ -3,6 +3,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { ThemeProvider } from "next-themes";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import AuthLayout from "@/components/auth/AuthLayout";
 import Login from "./pages/Login.tsx";
 import Register from "./pages/Register.tsx";
 import NotFound from "./pages/NotFound.tsx";
@@ -18,8 +19,10 @@ const App = () => (
         <Toaster richColors position="bottom-right" theme="dark" />
         <BrowserRouter>
           <Routes>
-            <Route path="/" element={<Login />} />
-            <Route path="/register" element={<Register />} />
+            <Route element={<AuthLayout />}>
+              <Route path="/" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+            </Route>
             <Route path="/plants" element={<PlantsPage />} />
             <Route path="/plants/:plantId/blueprint" element={<BlueprintPage />} />
             <Route path="*" element={<NotFound />} />
